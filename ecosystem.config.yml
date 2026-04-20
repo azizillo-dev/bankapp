@@ -1,0 +1,15 @@
+# NexBank — PM2 ecosystem fayli
+# Foydalanish: pm2 start ecosystem.config.yml
+
+apps:
+  - name: nexbank
+    script: venv/bin/gunicorn
+    args: app:app --bind 0.0.0.0:8000 --workers 2 --timeout 60
+    cwd: /home/ubuntu/nexbank
+    interpreter: none
+    env_file: .env
+    watch: false
+    max_memory_restart: 200M
+    log_date_format: YYYY-MM-DD HH:mm:ss
+    error_file: logs/error.log
+    out_file: logs/output.log

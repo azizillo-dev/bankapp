@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}NexBank — Raqamli bank{% endblock %}
+{% block body %}
+<div class="landing">
+  <!-- NAV -->
+  <nav class="land-nav">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Nex<b>Bank</b></span>
+    </div>
+    <div class="nav-actions">
+      <a href="{{ url_for('login') }}" class="btn-ghost">Kirish</a>
+      <a href="{{ url_for('register') }}" class="btn-primary">Ro'yxatdan o'tish</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+      <div class="grid-overlay"></div>
+    </div>
+    <div class="hero-content">
+      <div class="hero-badge">🏦 Demo bank tizimi</div>
+      <h1 class="hero-title">
+        Kelajak bank<br/>
+        <span class="gradient-text">bugungi kunda.</span>
+      </h1>
+      <p class="hero-desc">
+        NexBank — zamonaviy raqamli bank platformasi. Pullarni o'tkazing, 
+        balansni real vaqtda kuzating va AI moliyaviy maslahatchi bilan 
+        xarajatlaringizni tahlil qiling.
+      </p>
+      <div class="hero-cta">
+        <a href="{{ url_for('register') }}" class="btn-primary btn-lg">Bepul boshlash</a>
+        <a href="#features" class="btn-outline btn-lg">Batafsil</a>
+      </div>
+      <div class="hero-stats">
+        <div class="stat"><b>100%</b><span>Xavfsiz</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><b>Realtime</b><span>Balans</span></div>
+        <div class="stat-sep"></div>
+        <div class="stat"><b>AI</b><span>Tahlil</span></div>
+      </div>
+    </div>
+    <!-- floating card mockup -->
+    <div class="hero-card-mockup">
+      <div class="mock-card blue-card">
+        <div class="mc-top">
+          <span class="mc-bank">NexBank</span>
+          <span class="mc-chip">▦</span>
+        </div>
+        <div class="mc-num">•••• •••• •••• 4821</div>
+        <div class="mc-bottom">
+          <span class="mc-name">DEMO FOYDALANUVCHI</span>
+          <span class="mc-exp">12/28</span>
+        </div>
+      </div>
+      <div class="mock-card purple-card offset-card">
+        <div class="mc-top">
+          <span class="mc-bank">NexBank</span>
+          <span class="mc-chip">▦</span>
+        </div>
+        <div class="mc-num">•••• •••• •••• 7293</div>
+        <div class="mc-bottom">
+          <span class="mc-name">YANGI KARTA</span>
+          <span class="mc-exp">06/29</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="section-label">IMKONIYATLAR</div>
+    <h2 class="section-title">Nima uchun NexBank?</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="fc-icon">💳</div>
+        <h3>Demo kartalar</h3>
+        <p>Ro'yxatdan o'tish bilan avtomatik 16 xonali unikal karta raqami va $10,000 demo balans oling.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">⚡</div>
+        <h3>Tezkor o'tkazma</h3>
+        <p>Istalgan NexBank karta raqamiga bir zumda pul o'tkazing. Tranzaksiya tarixi saqlanadi.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🤖</div>
+        <h3>AI Maslahatchi</h3>
+        <p>Gemini AI orqali xarajatlaringizni tahlil qiling, moliyaviy maslahat oling.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">📊</div>
+        <h3>Real-time kurs</h3>
+        <p>Dollar, Euro, So'm va boshqa valyutalar kursi real vaqtda yangilanib turadi.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🧾</div>
+        <h3>Check tayyorlash</h3>
+        <p>Har bir o'tkazmadan keyin chek chiqaring va saqlang.</p>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon">🔐</div>
+        <h3>OTP xavfsizlik</h3>
+        <p>Emailga yuborilgan bir martalik kod orqali kirish. Xavfsiz autentifikatsiya.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-it-works">
+    <div class="section-label">QANDAY ISHLAYDI</div>
+    <h2 class="section-title">3 qadamda boshlang</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <h3>Ro'yxatdan o'ting</h3>
+        <p>Ism, familiya va email kiriting. OTP kodi bilan tasdiqlang.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <h3>Karta oling</h3>
+        <p>Avtomatik demo karta va $10,000 balans bilan boshlang.</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <h3>Ishlating</h3>
+        <p>O'tkazma qiling, AI bilan gaplashing, kurslarni kuzating.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="land-footer">
+    <div class="logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Nex<b>Bank</b></span>
+    </div>
+    <p class="footer-copy">© 2024 NexBank · Demo loyiha · TATU talabasi tomonidan yaratilgan</p>
+  </footer>
+</div>
+{% endblock %}

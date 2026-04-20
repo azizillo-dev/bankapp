@@ -1,0 +1,280 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — NexBank{% endblock %}
+{% block extra_head %}
+<style>
+  body { background: #070b14; }
+</style>
+{% endblock %}
+{% block body %}
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="{{ url_for('dashboard') }}" class="logo sidebar-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Nex<b>Bank</b></span>
+    </a>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard') }}" class="sn-item active">
+        <span class="sn-icon">⊞</span><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('transfer') }}" class="sn-item">
+        <span class="sn-icon">↗</span><span>O'tkazma</span>
+      </a>
+      <a href="{{ url_for('profile') }}" class="sn-item">
+        <span class="sn-icon">◎</span><span>Profil</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">{{ session.user_name[0] }}</div>
+        <div class="sb-info">
+          <b>{{ session.user_name }}</b>
+          <span>Premium</span>
+        </div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sn-item logout-btn">
+        <span class="sn-icon">⇥</span><span>Chiqish</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <div class="top-bar">
+      <div>
+        <h1 class="page-title">Salom, {{ user.first_name }}! 👋</h1>
+        <p class="page-sub">{{ now if now else '' }} Bugungi holat</p>
+      </div>
+      <div class="top-bar-actions">
+        <a href="{{ url_for('transfer') }}" class="btn-primary">+ O'tkazma</a>
+      </div>
+    </div>
+
+    <!-- CARDS ROW -->
+    <div class="cards-section">
+      <div class="section-header">
+        <h2>Kartalarim</h2>
+        <form method="POST" action="{{ url_for('add_card') }}" style="display:inline">
+          <button type="submit" class="btn-ghost btn-sm">+ Yangi karta</button>
+        </form>
+      </div>
+      <div class="cards-scroll" id="cardsScroll">
+        {% for card in cards %}
+        <div class="bank-card {{ card.color }}-card" data-card="{{ card.card_number }}">
+          <div class="bc-top">
+            <span class="bc-bank">◈ NexBank</span>
+            <span class="bc-chip">▦</span>
+          </div>
+          <div class="bc-balance" id="bal-{{ card.card_number }}">
+            ${{ "%.2f"|format(card.balance) }}
+          </div>
+          <div class="bc-num">
+            {{ card.card_number[:4] }} {{ card.card_number[4:8] }} {{ card.card_number[8:12] }} {{ card.card_number[12:] }}
+          </div>
+          <div class="bc-bottom">
+            <span class="bc-name">{{ user.first_name|upper }} {{ user.last_name|upper }}</span>
+            <span class="bc-exp">{{ card.created_at[:7]|replace('-','/') }}</span>
+          </div>
+          <div class="bc-copy" onclick="copyCard('{{ card.card_number }}')">📋 Nusxa</div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- STATS + RATES -->
+    <div class="dash-grid">
+      <!-- Total balance -->
+      <div class="dash-widget">
+        <div class="dw-label">Jami balans</div>
+        <div class="dw-value" id="totalBalance">
+          ${{ "%.2f"|format(cards|sum(attribute='balance')) }}
+        </div>
+        <div class="dw-sub">Barcha kartalar bo'yicha</div>
+      </div>
+      <!-- Transactions count -->
+      <div class="dash-widget">
+        <div class="dw-label">Tranzaksiyalar</div>
+        <div class="dw-value">{{ transactions|length }}</div>
+        <div class="dw-sub">Oxirgi 20 ta</div>
+      </div>
+      <!-- Cards count -->
+      <div class="dash-widget">
+        <div class="dw-label">Kartalar soni</div>
+        <div class="dw-value">{{ cards|length }}</div>
+        <div class="dw-sub">Faol kartalar</div>
+      </div>
+
+      <!-- Exchange rates widget -->
+      <div class="dash-widget rates-widget" style="grid-column: span 1;">
+        <div class="dw-label">💱 Valyuta kurslari <span class="live-dot"></span></div>
+        <div id="ratesList" class="rates-list">
+          <div class="rate-loader">Yuklanmoqda...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRANSACTIONS TABLE -->
+    <div class="section-header" style="margin-top:32px">
+      <h2>Tranzaksiya tarixi</h2>
+    </div>
+    <div class="txn-table-wrap">
+      {% if transactions %}
+      <table class="txn-table">
+        <thead>
+          <tr>
+            <th>Sana</th>
+            <th>Kimdan / Kimga</th>
+            <th>Izoh</th>
+            <th>Miqdor</th>
+            <th>Chek</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for txn in transactions %}
+          {% set is_sender = txn.sender_card in user_cards %}
+          <tr>
+            <td>{{ txn.created_at[:16] }}</td>
+            <td>
+              {% if is_sender %}
+                <span class="txn-out">↑ Chiqim</span><br/>
+                <small>{{ txn.receiver_card[:4] }}••••{{ txn.receiver_card[-4:] }} · {{ txn.receiver_name }}</small>
+              {% else %}
+                <span class="txn-in">↓ Kirim</span><br/>
+                <small>{{ txn.sender_card[:4] }}••••{{ txn.sender_card[-4:] }} · {{ txn.sender_name }}</small>
+              {% endif %}
+            </td>
+            <td>{{ txn.note or '—' }}</td>
+            <td class="{{ 'amount-out' if is_sender else 'amount-in' }}">
+              {{ '-' if is_sender else '+' }}${{ "%.2f"|format(txn.amount) }}
+            </td>
+            <td>
+              <a href="{{ url_for('transaction_detail', txn_id=txn.id) }}" class="btn-ghost btn-xs">🧾 Chek</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <div class="es-icon">📭</div>
+        <p>Hali tranzaksiyalar yo'q</p>
+        <a href="{{ url_for('transfer') }}" class="btn-primary">Birinchi o'tkazma qiling</a>
+      </div>
+      {% endif %}
+    </div>
+  </main>
+</div>
+
+<!-- AI CHATBOT -->
+<div class="chatbot-fab" onclick="toggleChat()" id="chatFab">
+  <span id="chatFabIcon">🤖</span>
+</div>
+<div class="chatbot-panel" id="chatPanel">
+  <div class="chat-header">
+    <div>
+      <b>NexBank AI</b>
+      <span class="live-dot"></span>
+    </div>
+    <button onclick="toggleChat()" class="chat-close">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg bot-msg">
+      Salom {{ user.first_name }}! Men NexBank AI maslahatchimanman. 
+      Moliyaviy savollaringizga javob beraman. 💬
+    </div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" id="chatInput" placeholder="Savol bering..." 
+           onkeydown="if(event.key==='Enter') sendChat()"/>
+    <button onclick="sendChat()" class="chat-send">→</button>
+  </div>
+</div>
+
+{% endblock %}
+{% block extra_js %}
+<script>
+const USER_CARDS = {{ user_cards | tojson }};
+
+// Real-time balance update every 15s
+async function refreshBalance() {
+  try {
+    const r = await fetch('/api/balance');
+    const cards = await r.json();
+    let total = 0;
+    cards.forEach(c => {
+      const el = document.getElementById('bal-' + c.card_number);
+      if (el) el.textContent = '$' + c.balance.toFixed(2);
+      total += c.balance;
+    });
+    const tb = document.getElementById('totalBalance');
+    if (tb) tb.textContent = '$' + total.toFixed(2);
+  } catch(e) {}
+}
+setInterval(refreshBalance, 15000);
+
+// Exchange rates
+async function loadRates() {
+  try {
+    const r = await fetch('/api/rates');
+    const data = await r.json();
+    const list = document.getElementById('ratesList');
+    const flags = {EUR:'🇪🇺',GBP:'🇬🇧',JPY:'🇯🇵',UZS:'🇺🇿',RUB:'🇷🇺',CNY:'🇨🇳',KRW:'🇰🇷'};
+    list.innerHTML = Object.entries(data.rates).map(([cur, rate]) =>
+      `<div class="rate-row">
+        <span>${flags[cur]||''} ${cur}</span>
+        <span class="rate-val">${rate > 100 ? rate.toFixed(0) : rate.toFixed(4)}</span>
+       </div>`
+    ).join('');
+  } catch(e) {
+    document.getElementById('ratesList').innerHTML = '<div style="color:#666">Yuklab bo\'lmadi</div>';
+  }
+}
+loadRates();
+setInterval(loadRates, 60000);
+
+// Copy card
+function copyCard(num) {
+  navigator.clipboard.writeText(num).then(() => {
+    showToast('Karta raqami nusxalandi!');
+  });
+}
+
+// Chat
+let chatOpen = false;
+function toggleChat() {
+  chatOpen = !chatOpen;
+  document.getElementById('chatPanel').classList.toggle('open', chatOpen);
+  document.getElementById('chatFab').classList.toggle('active', chatOpen);
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = '';
+  appendMsg(msg, 'user');
+  const typing = appendMsg('...', 'bot');
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({message: msg})
+    });
+    const d = await r.json();
+    typing.textContent = d.reply;
+  } catch(e) {
+    typing.textContent = 'Xato yuz berdi.';
+  }
+}
+
+function appendMsg(text, who) {
+  const msgs = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `chat-msg ${who === 'user' ? 'user-msg' : 'bot-msg'}`;
+  div.textContent = text;
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+  return div;
+}
+</script>
+{% endblock %}

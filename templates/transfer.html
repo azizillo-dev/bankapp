@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}O'tkazma — NexBank{% endblock %}
+{% block extra_head %}<style>body{background:#070b14;}</style>{% endblock %}
+{% block body %}
+<div class="app-layout">
+  <aside class="sidebar">
+    <a href="{{ url_for('dashboard') }}" class="logo sidebar-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Nex<b>Bank</b></span>
+    </a>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard') }}" class="sn-item">
+        <span class="sn-icon">⊞</span><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('transfer') }}" class="sn-item active">
+        <span class="sn-icon">↗</span><span>O'tkazma</span>
+      </a>
+      <a href="{{ url_for('profile') }}" class="sn-item">
+        <span class="sn-icon">◎</span><span>Profil</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">{{ session.user_name[0] }}</div>
+        <div class="sb-info"><b>{{ session.user_name }}</b><span>Premium</span></div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sn-item logout-btn">
+        <span class="sn-icon">⇥</span><span>Chiqish</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="top-bar">
+      <div>
+        <h1 class="page-title">Pul o'tkazma</h1>
+        <p class="page-sub">Boshqa kartaga pul yuboring</p>
+      </div>
+    </div>
+
+    <div class="transfer-layout">
+      <div class="transfer-form-box">
+        <form method="POST" class="auth-form" id="transferForm">
+          <div class="form-group">
+            <label>Qaysi kartadan</label>
+            <select name="from_card" required class="form-select" id="fromCard" onchange="updateBalance()">
+              {% for card in cards %}
+              <option value="{{ card.card_number }}" data-balance="{{ card.balance }}">
+                •••• {{ card.card_number[-4:] }} — ${{ "%.2f"|format(card.balance) }}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="balance-pill">
+            Mavjud balans: <b id="availBal">${{ "%.2f"|format(cards[0].balance if cards else 0) }}</b>
+          </div>
+
+          <div class="form-group">
+            <label>Qabul qiluvchi karta raqami (16 ta raqam)</label>
+            <input type="text" name="to_card" required placeholder="1234 5678 9012 3456"
+                   maxlength="19" id="toCardInput" oninput="formatCard(this)"
+                   autocomplete="off"/>
+          </div>
+
+          <div class="form-group">
+            <label>Miqdor (USD)</label>
+            <div class="amount-wrap">
+              <span class="amount-prefix">$</span>
+              <input type="number" name="amount" required placeholder="0.00"
+                     min="0.01" step="0.01" id="amountInput"/>
+            </div>
+          </div>
+
+          <!-- Quick amounts -->
+          <div class="quick-amounts">
+            <button type="button" onclick="setAmount(10)">$10</button>
+            <button type="button" onclick="setAmount(50)">$50</button>
+            <button type="button" onclick="setAmount(100)">$100</button>
+            <button type="button" onclick="setAmount(500)">$500</button>
+          </div>
+
+          <div class="form-group">
+            <label>Izoh (ixtiyoriy)</label>
+            <input type="text" name="note" placeholder="To'lov uchun..." maxlength="100"/>
+          </div>
+
+          <button type="submit" class="btn-primary btn-full btn-lg" id="submitBtn">
+            Yuborish →
+          </button>
+        </form>
+      </div>
+
+      <!-- Preview card -->
+      <div class="transfer-preview">
+        <div class="tp-label">O'tkazma tafsiloti</div>
+        <div class="tp-row">
+          <span>Kimdan:</span>
+          <b id="prevFrom">Karta tanlanmagan</b>
+        </div>
+        <div class="tp-arrow">↓</div>
+        <div class="tp-row">
+          <span>Kimga:</span>
+          <b id="prevTo">—</b>
+        </div>
+        <div class="tp-sep"></div>
+        <div class="tp-row tp-total">
+          <span>Miqdor:</span>
+          <b id="prevAmount">$0.00</b>
+        </div>
+        <div class="tp-info">
+          ⚡ O'tkazma bir zumda amalga oshiriladi
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function updateBalance() {
+  const sel = document.getElementById('fromCard');
+  const opt = sel.options[sel.selectedIndex];
+  const bal = parseFloat(opt.dataset.balance);
+  document.getElementById('availBal').textContent = '$' + bal.toFixed(2);
+  updatePreview();
+}
+
+function formatCard(input) {
+  let v = input.value.replace(/\D/g, '').substring(0,16);
+  input.value = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+  updatePreview();
+}
+
+function setAmount(val) {
+  document.getElementById('amountInput').value = val;
+  updatePreview();
+}
+
+function updatePreview() {
+  const sel = document.getElementById('fromCard');
+  const opt = sel.options[sel.selectedIndex];
+  const cardText = opt ? '•••• ' + opt.value.slice(-4) : '—';
+  document.getElementById('prevFrom').textContent = cardText;
+
+  const to = document.getElementById('toCardInput').value.replace(/\s/g,'');
+  document.getElementById('prevTo').textContent = to.length >= 4 ?
+    to.slice(0,4) + ' •••• •••• ' + to.slice(-4) : '—';
+
+  const amt = parseFloat(document.getElementById('amountInput').value) || 0;
+  document.getElementById('prevAmount').textContent = '$' + amt.toFixed(2);
+}
+
+document.getElementById('fromCard')?.addEventListener('change', updatePreview);
+document.getElementById('amountInput')?.addEventListener('input', updatePreview);
+updatePreview();
+</script>
+{% endblock %}

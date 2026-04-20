@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Chek #{{ txn.id }} — NexBank{% endblock %}
+{% block extra_head %}<style>body{background:#070b14;}</style>{% endblock %}
+{% block body %}
+<div class="app-layout">
+  <aside class="sidebar">
+    <a href="{{ url_for('dashboard') }}" class="logo sidebar-logo">
+      <span class="logo-icon">◈</span>
+      <span class="logo-text">Nex<b>Bank</b></span>
+    </a>
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard') }}" class="sn-item">
+        <span class="sn-icon">⊞</span><span>Dashboard</span>
+      </a>
+      <a href="{{ url_for('transfer') }}" class="sn-item">
+        <span class="sn-icon">↗</span><span>O'tkazma</span>
+      </a>
+      <a href="{{ url_for('profile') }}" class="sn-item">
+        <span class="sn-icon">◎</span><span>Profil</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sb-user">
+        <div class="sb-avatar">{{ session.user_name[0] }}</div>
+        <div class="sb-info"><b>{{ session.user_name }}</b><span>Premium</span></div>
+      </div>
+      <a href="{{ url_for('logout') }}" class="sn-item logout-btn">
+        <span class="sn-icon">⇥</span><span>Chiqish</span>
+      </a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="top-bar">
+      <div>
+        <h1 class="page-title">Tranzaksiya cheki</h1>
+        <p class="page-sub">Chekni saqlash yoki chiqarish mumkin</p>
+      </div>
+      <div class="top-bar-actions">
+        <button onclick="window.print()" class="btn-ghost">🖨 Chop etish</button>
+        <a href="{{ url_for('dashboard') }}" class="btn-primary">← Dashboard</a>
+      </div>
+    </div>
+
+    <div class="check-wrap">
+      <div class="check-box" id="checkBox">
+        <!-- Header -->
+        <div class="check-header">
+          <div class="logo" style="font-size:22px">
+            <span class="logo-icon">◈</span>
+            <span class="logo-text">Nex<b>Bank</b></span>
+          </div>
+          <div class="check-status success">✓ Muvaffaqiyatli</div>
+        </div>
+
+        <div class="check-amount-big">${{ "%.2f"|format(txn.amount) }}</div>
+        <div class="check-date">{{ txn.created_at[:16] }} UTC</div>
+
+        <div class="check-divider"></div>
+
+        <div class="check-row">
+          <span class="ck-label">Chek raqami</span>
+          <span class="ck-val">#{{ "%06d"|format(txn.id) }}</span>
+        </div>
+        <div class="check-row">
+          <span class="ck-label">Jo'natuvchi</span>
+          <span class="ck-val">{{ txn.sender_name }}</span>
+        </div>
+        <div class="check-row">
+          <span class="ck-label">Jo'natuvchi karta</span>
+          <span class="ck-val font-mono">{{ txn.sender_card[:4] }} •••• •••• {{ txn.sender_card[-4:] }}</span>
+        </div>
+        <div class="check-row">
+          <span class="ck-label">Qabul qiluvchi</span>
+          <span class="ck-val">{{ txn.receiver_name }}</span>
+        </div>
+        <div class="check-row">
+          <span class="ck-label">Qabul qiluvchi karta</span>
+          <span class="ck-val font-mono">{{ txn.receiver_card[:4] }} •••• •••• {{ txn.receiver_card[-4:] }}</span>
+        </div>
+        <div class="check-row">
+          <span class="ck-label">Valyuta</span>
+          <span class="ck-val">{{ txn.currency }}</span>
+        </div>
+        {% if txn.note %}
+        <div class="check-row">
+          <span class="ck-label">Izoh</span>
+          <span class="ck-val">{{ txn.note }}</span>
+        </div>
+        {% endif %}
+
+        <div class="check-divider dashed"></div>
+        <div class="check-footer">
+          NexBank Demo Platform · nexbank.uz<br/>
+          <small>Bu chek elektron hujjat bo'lib, rasmiy ahamiyat kasb etmaydi.</small>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<style>
+@media print {
+  .sidebar, .top-bar, .top-bar-actions { display: none !important; }
+  .main-content { margin: 0; padding: 0; }
+  .check-wrap { margin: 0; }
+  .check-box { box-shadow: none; border: 2px solid #ddd; }
+  body { background: white !important; }
+}
+</style>
+{% endblock %}
